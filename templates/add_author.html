@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Author</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Add a New Author</h1>
+    </header>
+
+    <div class="container">
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <!-- Add Author Form -->
+        <form method="POST" class="form">
+            <label for="name">Author Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="birth_date">Birth Date:</label>
+            <input type="date" id="birth_date" name="birth_date" required>
+
+            <label for="date_of_death">Date of Death:</label>
+            <input type="date" id="date_of_death" name="date_of_death">
+
+            <input type="submit" value="Add Author" class="btn">
+        </form>
+    </div>
+</body>
+</html>

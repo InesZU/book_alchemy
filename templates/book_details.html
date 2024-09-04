@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.title }} - Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Book Details</h1>
+    </header>
+
+    <div class="container">
+        <h2>{{ book.title }}</h2>
+        <img src="{{ cover_image_url }}" alt="Cover image of {{ book.title }}" width="150">
+        <p><strong>Author:</strong> {{ book.author.name }}</p>
+        <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+        <p><strong>Publication Year:</strong> {{ book.publication_year }}</p>
+
+        <a href="{{ url_for('home') }}" class="form button">Back to Home</a>
+    </div>
+</body>
+</html>
