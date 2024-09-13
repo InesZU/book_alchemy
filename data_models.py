@@ -5,6 +5,16 @@ db = SQLAlchemy()
 
 
 class Author(db.Model):
+    """
+    Author model representing the authors in the library.
+
+    Attributes:
+        id (int): Primary key, auto-incremented.
+        name (str): Name of the author.
+        birth_date (date): Author's birth date.
+        date_of_death (date): Author's date of death (nullable).
+        books (relationship): One-to-many relationship with the Book model.
+    """
     __tablename__ = 'authors'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -22,6 +32,17 @@ class Author(db.Model):
 
 
 class Book(db.Model):
+    """
+    Book model representing books in the library.
+
+    Attributes:
+        id (int): Primary key, auto-incremented.
+        isbn (str): Book's ISBN number.
+        title (str): Book title.
+        publication_year (int): Year of publication.
+        author_id (int): Foreign key linking to the Author model.
+        author (relationship): Many-to-one relationship with the Author model.
+    """
     __tablename__ = 'books'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -29,8 +50,6 @@ class Book(db.Model):
     title = db.Column(db.String(200))
     publication_year = db.Column(db.Integer)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'))
-
-    # Establish a relationship with the Author model
     author = db.relationship('Author', back_populates='books')
 
     def __repr__(self):
