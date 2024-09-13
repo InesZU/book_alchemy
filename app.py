@@ -3,17 +3,21 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
 from data_models import db, Author, Book
 import os
+from dotenv import load_dotenv
 
+
+# Initialize Flask app
 app = Flask(__name__)
-
+# Load environment variables from .env file
+load_dotenv()
 # Get the current directory
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# Configure the SQLAlchemy part of the app instance
+# Configure SQLAlchemy
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///' + os.path.join(basedir, 'data', 'library.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'HZBATSKLoh4r7ghkfiobmnkkjf'
-
+app.secret_key = os.getenv('SECRET_KEY')  # Get secret key from environment variable
+# Initialize SQLAlchemy with the app
 db.init_app(app)
 
 # Create database tables if they don't exist
@@ -21,48 +25,49 @@ with app.app_context():
     db.create_all()
 
 
-def get_cover_image(isbn):
+def get_cover_image(isbn, title):
+    # Create a file-safe title for the image filename
+    safe_title = title.lower().replace(' ', '_')  # e.g., "lonesome_dove"
+
+    # Define the local path where the image will be stored
+    local_image_path = os.path.join('static', 'covers', f'{safe_title}.jpg')
+
+    # Check if the cover already exists locally
+    if os.path.exists(local_image_path):
+        return url_for('static', filename=f'covers/{safe_title}.jpg')
+
+    # Otherwise, fetch the cover from the external source and save it locally
     url = f'https://covers.openlibrary.org/b/isbn/{isbn}-M.jpg'
     response = requests.get(url)
     if response.status_code == 200:
-        return url
+        # Save the image locally
+        with open(local_image_path, 'wb') as f:
+            f.write(response.content)
+        return url_for('static', filename=f'covers/{safe_title}.jpg')
     else:
-        return 'https://via.placeholder.com/150?text=No+Cover+Available'
+        # Fallback to a placeholder image if the cover is not found
+        return url_for('static', filename='covers/placeholder.jpg')
 
 
 # Home route
 @app.route('/')
 def home():
-    sort_by = request.args.get('sort_by', 'title')
-    search_query = request.args.get('search', '')
+    sort_by = request.args.get('sort_by', 'title')  # Default sort by title
+    search_query = request.args.get('search', '')  # Default empty search query
 
-    query = Book.query.join(Author)
+    if sort_by not in ['title', 'author']:
+        sort_by = 'title'
 
+    query = Book.query
     if search_query:
-        search_term = f"%{search_query}%"
-        query = query.filter(
-            (Book.title.ilike(search_term)) |
-            (Author.name.ilike(search_term))
-        )
+        query = query.filter(Book.title.ilike(f'%{search_query}%'))
 
-    if sort_by == 'author':
-        query = query.order_by(Author.name)
-    else:
-        query = query.order_by(Book.title)
+    if sort_by == 'title':
+        books = query.order_by(Book.title).all()
+    elif sort_by == 'author':
+        books = query.join(Author).order_by(Author.name).all()
 
-    books = query.all()
-
-    books_data = []
-    for book in books:
-        books_data.append({
-            'id': book.id,
-            'title': book.title,
-            'author': book.author.name,
-            'cover_image_url': get_cover_image(book.isbn),  # Add cover image URL
-            'author_id': book.author.id,  # Add author_id here
-        })
-
-    return render_template('home.html', books=books_data)
+    return render_template('home.html', books=books)
 
 
 # Add Author route
@@ -86,13 +91,13 @@ def add_author():
             flash(f'Author "{new_author.name}" added successfully!', 'success')
         return redirect(url_for('add_author'))
 
-    authors = Author.query.all()
-    return render_template('add_author.html', authors=authors)
+    return render_template('add_author.html')
 
 
 # Add Book route
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+    authors = Author.query.all()  # Query authors to populate dropdown
     if request.method == 'POST':
         isbn = request.form['isbn']
         title = request.form['title']
@@ -109,23 +114,25 @@ def add_book():
             flash(f'Book "{new_book.title}" added successfully!', 'success')
         return redirect(url_for('add_book'))
 
-    return render_template('add_book.html')
+    return render_template('add_book.html', authors=authors)
 
 
 # Delete Book route
 @app.route('/book/<int:book_id>/delete', methods=['POST'])
 def delete_book(book_id):
     book = Book.query.get_or_404(book_id)
-    author = book.author
+    author_id = book.author_id
 
     db.session.delete(book)
     db.session.commit()
 
-    if not Book.query.filter_by(author_id=author.id).first():
+    # Check if the author has any other books
+    author = Author.query.get(author_id)
+    if not author.books:  # No other books by this author
         db.session.delete(author)
         db.session.commit()
 
-    flash(f"The book '{book.title}' has been deleted successfully.", 'success')
+    flash(f'Book "{book.title}" has been deleted successfully!', 'success')
     return redirect(url_for('home'))
 
 
@@ -151,7 +158,7 @@ def delete_author(author_id):
 @app.route('/book/<int:book_id>')
 def book_details(book_id):
     book = Book.query.get_or_404(book_id)
-    cover_image_url = get_cover_image(book.isbn)  # Use the function to get the cover image URL
+    cover_image_url = get_cover_image(book.isbn, book.title)  # Use the function to get the cover image URL
 
     return render_template('book_details.html',
                            book=book,

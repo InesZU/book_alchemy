@@ -4,37 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Author</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
-        <h1>Add a New Author</h1>
+        <h1>Add Author</h1>
     </header>
 
     <div class="container">
-        <!-- Display flash messages -->
+        <!-- Flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="flash">
+                <ul class="flash">
                     {% for category, message in messages %}
-                        <div class="flash {{ category }}">{{ message }}</div>
+                        <li class="{{ category }}">{{ message }}</li>
                     {% endfor %}
-                </div>
+                </ul>
             {% endif %}
         {% endwith %}
-        <!-- Add Author Form -->
-        <form method="POST" class="form">
-            <label for="name">Author Name:</label>
-            <input type="text" id="name" name="name" required>
 
-            <label for="birth_date">Birth Date:</label>
-            <input type="date" id="birth_date" name="birth_date" required>
+        <form method="POST">
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" required><br><br>
 
-            <label for="date_of_death">Date of Death:</label>
-            <input type="date" id="date_of_death" name="date_of_death">
+            <label for="birth_date">Birth Date:</label><br>
+            <input type="date" id="birth_date" name="birth_date"><br><br>
 
-            <input type="submit" value="Add Author" class="btn">
+            <label for="date_of_death">Date of Death:</label><br>
+            <input type="date" id="date_of_death" name="date_of_death"><br><br>
+
+            <input type="submit" value="Add Author">
         </form>
     </div>
+
+    <footer>
+        <p>Data provided by <a href="https://openlibrary.org/" target="_blank" rel="noopener noreferrer">Open Library</a></p>
+    </footer>
 </body>
 </html>

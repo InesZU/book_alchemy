@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ book.title }} - Details</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
@@ -14,11 +14,13 @@
     <div class="container">
         <h2>{{ book.title }}</h2>
         <img src="{{ cover_image_url }}" alt="Cover image of {{ book.title }}" width="150">
-        <p><strong>Author:</strong> {{ book.author.name }}</p>
+        <p>Author: <a href="{{ url_for('author_details', author_id=book.author.id) }}">{{ book.author.name }}</a></p>
         <p><strong>ISBN:</strong> {{ book.isbn }}</p>
         <p><strong>Publication Year:</strong> {{ book.publication_year }}</p>
 
-        <a href="{{ url_for('home') }}" class="form button">Back to Home</a>
+        <div class="nav-buttons">
+        <a href="{{ url_for('home') }}" class="btn btn-primary">Back to Home</a>
+        </div>
     </div>
 </body>
 </html>

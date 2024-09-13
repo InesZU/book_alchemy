@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Home</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
@@ -12,22 +12,30 @@
     </header>
 
     <div class="container">
+            <!-- Navigation buttons -->
+        <div class="nav-buttons">
+            <a href="{{ url_for('add_author') }}" class="btn btn-primary">Add Author</a>
+            <a href="{{ url_for('add_book') }}" class="btn btn-primary">Add Book</a>
+        </div>
+        <!-- Search form -->
         <form method="get" action="/">
             <label for="search">Search for a book:</label>
             <input type="text" id="search" name="search" placeholder="Enter book title or author">
             <button type="submit">Search</button>
         </form>
-        <form method="get" action="/">
+
+        <!-- Sort form -->
+        <form method="GET" action="/">
             <label for="sort_by">Sort by:</label>
             <select name="sort_by" id="sort_by" onchange="this.form.submit()">
-                <option value="title">Title</option>
-                <option value="author">Author</option>
+                <option value="title" {% if request.args.get('sort_by') == 'title' %}selected{% endif %}>Title</option>
+                <option value="author" {% if request.args.get('sort_by') == 'author' %}selected{% endif %}>Author</option>
             </select>
         </form>
-
+        <!-- Flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <ul>
+                <ul >
                     {% for category, message in messages %}
                         <li class="{{ category }}">{{ message }}</li>
                     {% endfor %}
@@ -35,24 +43,26 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Book list -->
         {% if books %}
             <ul class="book-list">
                 {% for book in books %}
                     <li class="book-item">
-                        <!-- Link to book detail page -->
+                        <!-- Clickable Book Cover -->
                         <a href="{{ url_for('book_details', book_id=book.id) }}" class="book-cover">
-                            <img src="{{ book.cover_image_url }}" alt="Cover image of {{ book.title }}" width="150">
+                            <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-L.jpg" alt="Cover image of {{ book.title }}">
                         </a>
                         <div class="book-details">
-                            <!-- Link to author detail page -->
-                            <h3 class="book-title">
-                                <a href="{{ url_for('book_details', book_id=book.id) }}">{{ book.title }}</a>
-                            </h3>
-                            <p>by <a href="{{ url_for('author_details', author_id=book.author_id) }}">{{ book.author }}</a></p>
+                            <h3>{{ book.title }}</h3>
+                            <p>by <a href="{{ url_for('author_details', author_id=book.author.id) }}">{{ book.author.name }}</a></p>
+
+                            <!-- Delete book button -->
                             <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}" style="display:inline;">
                                 <button type="submit" onclick="return confirm('Are you sure you want to delete this book?');">Delete Book</button>
                             </form>
-                            <form method="post" action="{{ url_for('delete_author', author_id=book.author_id) }}" style="display:inline;">
+
+                            <!-- Optionally delete author if no other books -->
+                            <form method="post" action="{{ url_for('delete_author', author_id=book.author.id) }}" style="display:inline;">
                                 <button type="submit" onclick="return confirm('Are you sure you want to delete this author and all their books?');">Delete Author</button>
                             </form>
                         </div>
@@ -67,7 +77,5 @@
     <footer>
         <p>Data provided by <a href="https://openlibrary.org/" target="_blank" rel="noopener noreferrer">Open Library</a></p>
     </footer>
-
-    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>

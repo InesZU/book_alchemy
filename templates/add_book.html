@@ -1,18 +1,53 @@
-<form method="POST">
-    <label for="isbn">ISBN:</label><br>
-    <input type="text" id="isbn" name="isbn" required><br><br>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Add Book</h1>
+    </header>
 
-    <label for="title">Title:</label><br>
-    <input type="text" id="title" name="title" required><br><br>
+    <div class="container">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash">
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
-    <label for="publication_year">Publication Year:</label><br>
-    <input type="number" id="publication_year" name="publication_year" required><br><br>
+        <form method="POST">
+            <label for="isbn">ISBN:</label><br>
+            <input type="text" id="isbn" name="isbn" required><br><br>
 
-    <label for="author_id">Author:</label><br>
-    <select id="author_id" name="author_id" required>
-        {% for author in authors %}
-            <option value="{{ author.id }}">{{ author.name }}</option>
-        {% endfor %}
-    </select><br><br>
-    <input type="submit" value="Add Book">
-</form>
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" required><br><br>
+
+            <label for="publication_year">Publication Year:</label><br>
+            <input type="number" id="publication_year" name="publication_year" required><br><br>
+
+            <label for="author_id">Author:</label><br>
+            <select id="author_id" name="author_id" required>
+                {% for author in authors %}
+                    <option value="{{ author.id }}">{{ author.name }}</option>
+                {% endfor %}
+            </select><br><br>
+
+            <input type="submit" value="Add Book">
+        </form>
+    </div>
+
+    <footer>
+        <p>Data provided by <a href="https://openlibrary.org/" target="_blank" rel="noopener noreferrer">Open Library</a></p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>
